@@ -1,0 +1,7 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: rgb(55, 53, 53);
+  color: #fff;
+  /* overflow-y: scroll; */
+}
