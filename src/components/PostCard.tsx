@@ -18,8 +18,19 @@ class PostCard extends Component<PostCardProps> {
   handleClick = () => {
     this.props.navigate(`/post`, { state: this.props.post });
   };
+  truncateUrl = (url: string, maxLength: number): string => {
+    if (!url) {
+      return "";
+    }
+    if (url.length <= maxLength) {
+      return url;
+    }
+    return url.substring(0, maxLength - 3) + "...";
+  };
   render() {
     const { post, key } = this.props;
+
+    const truncatedUrl = this.truncateUrl(post.url, 60);
 
     const formattedDate = new Date(post.created_at).toLocaleString();
     return (
@@ -30,8 +41,10 @@ class PostCard extends Component<PostCardProps> {
           padding: "20px",
           marginBottom: "20px",
           height: "100px",
+          wordWrap: "break-word",
         }}
         onClick={this.handleClick}
+        data-testid="postcard-id"
       >
         <Typography variant="h6" fontWeight={"700"}>
           {post.title}
@@ -39,8 +52,18 @@ class PostCard extends Component<PostCardProps> {
         <Typography variant="body1" fontWeight={"600"}>
           Author - <span style={{ color: "red " }}>{post.author}</span>
         </Typography>
-        <Typography variant="body1">URL: {post.url}</Typography>
-        <Typography variant="body1">Created At: {formattedDate}</Typography>
+        <Typography variant="body1" data-testid="truncated-url">
+          URL:{" "}
+          <a
+            href={post.url}
+            target="_blank"
+            onClick={(e) => e.stopPropagation()}
+            rel="noopener noreferrer"
+          >
+            {truncatedUrl}
+          </a>
+        </Typography>
+        <Typography variant="body1">{formattedDate}</Typography>
       </Paper>
     );
   }

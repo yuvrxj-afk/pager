@@ -1,9 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Box, Button, Container, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  TextField,
+} from "@mui/material";
 import { Component } from "react";
 import PostCardWithRouter from "./PostCard";
 import withRouter from "./withRouter";
-import PostCardEithRouter from "./PostCard";
 interface postType {
   author: string;
   title: string;
@@ -47,27 +52,29 @@ class Homepage extends Component<HomeProps, HomeState> {
       );
       const data = await response.json();
       const newPosts = data.hits;
+      if (page > data.nbPages) {
+        clearInterval(this.interval);
+        return;
+      }
       this.setState({
         posts: [...posts, ...newPosts],
         page: page + 1,
       });
+      this.setState({ loading: false });
     } catch (error) {
       console.log(error);
-    } finally {
-      this.setState({ loading: false });
     }
   };
 
   handleScroll = async () => {
-    try {
-      if (
-        window.innerHeight + document.documentElement.scrollTop ===
+    if (
+      !this.state.loading &&
+      window.innerHeight + document.documentElement.scrollTop ===
         document.documentElement.offsetHeight
-      ) {
-        await this.fetchPosts();
-      }
-    } catch (error) {
-      console.log(error);
+    ) {
+      await this.fetchPosts();
+      clearInterval(this.interval);
+      this.interval = window.setInterval(this.fetchPosts, 10000);
     }
   };
 
@@ -83,7 +90,6 @@ class Homepage extends Component<HomeProps, HomeState> {
       this.setState({ searchedPosts: [] });
       return;
     }
-    console.log(searchTerm);
     const filteredSearchedPosts = posts.filter(
       (post) =>
         post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -95,7 +101,7 @@ class Homepage extends Component<HomeProps, HomeState> {
 
   componentDidMount() {
     this.fetchPosts();
-    this.interval = setInterval(this.fetchPosts, 10000);
+    this.interval = window.setInterval(this.fetchPosts, 10000);
     window.addEventListener("scroll", this.handleScroll);
   }
 
@@ -137,7 +143,7 @@ class Homepage extends Component<HomeProps, HomeState> {
           {searchedPosts.length !== 0 ? (
             <>
               {searchedPosts.map((post, i) => (
-                <PostCardEithRouter post={post} key={i} />
+                <PostCardWithRouter post={post} key={i} />
               ))}
             </>
           ) : (
@@ -145,7 +151,16 @@ class Homepage extends Component<HomeProps, HomeState> {
               {posts.map((post, i) => (
                 <PostCardWithRouter post={post} key={i} />
               ))}
-              {loading && <p>loading</p>}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {loading && <CircularProgress />}
+              </Box>
             </>
           )}
         </Box>

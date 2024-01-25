@@ -25,6 +25,16 @@ class PostDetails extends Component<PostDetailsProps, PostDetailsState> {
     };
   }
 
+  truncateUrl = (url: string, maxLength: number): string => {
+    if (!url) {
+      return "";
+    }
+    if (url.length <= maxLength) {
+      return url;
+    }
+    return url.substring(0, maxLength - 3) + "...";
+  };
+
   componentDidMount() {
     const { location } = this.props;
     const PostDetail: PostDetailsProps = location.state;
@@ -35,6 +45,7 @@ class PostDetails extends Component<PostDetailsProps, PostDetailsState> {
     if (!post) {
       return;
     }
+    const truncatedUrl = this.truncateUrl(post.url, 60);
     const formattedDate = new Date(post.created_at).toLocaleString();
 
     return (
@@ -56,6 +67,7 @@ class PostDetails extends Component<PostDetailsProps, PostDetailsState> {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
+            wordWrap: "break-word",
           }}
         >
           <Icon
@@ -67,18 +79,18 @@ class PostDetails extends Component<PostDetailsProps, PostDetailsState> {
             <HomeOutlined />
           </Icon>
           <Typography variant="h5" sx={{ fontWeight: "800" }}>
-            Title: {post.title}
+            {post.title}
           </Typography>
           <Typography variant="subtitle1" sx={{ fontWeight: "600" }}>
             Author: {post.author}
           </Typography>
-          <Typography variant="body1">
+          <Typography variant="body1" data-testid="truncated-url">
             URL:{" "}
             <a href={post.url} target="_blank" rel="noopener noreferrer">
-              {post.url}
+              {truncatedUrl}
             </a>
           </Typography>
-          <Typography variant="body1">Created At: {formattedDate}</Typography>
+          <Typography variant="body1">{formattedDate}</Typography>
         </Paper>
       </Box>
     );
